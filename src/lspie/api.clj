@@ -1,4 +1,4 @@
-(ns lspie.server
+(ns lspie.api
   (:require
    [clojure.string :as str]
    [clojure.data.json :as json])
