@@ -15,7 +15,11 @@
     OutputStreamWriter
 
     BufferedReader
-    BufferedWriter))
+    BufferedWriter)
+
+   (java.util.concurrent
+    Executors
+    ExecutorService))
 
   (:gen-class))
 
@@ -84,7 +88,9 @@
 
         initial-state {:chars []
                        :newline# 0
-                       :return# 0}]
+                       :return# 0}
+
+        ^ExecutorService ne (Executors/newFixedThreadPool 4)]
 
     (loop [{:keys [chars newline# return#] :as state} initial-state]
       (cond
@@ -107,27 +113,34 @@
                               (trace {:status :message-handled
                                       :header header
                                       :content jsonrpc
-                                      :handled handled}))
+                                      :handled handled}))]
 
-              handled (doto (handle jsonrpc) trace-handled)]
-
-          ;; Don't send a response back for a notification.
-          ;; (It's assumed that only requests have ID.)
-          ;;
           ;; > Every processed request must send a response back to the sender of the request.
           ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#requestMessage
           ;;
           ;; > A processed notification message must not send a response back. They work like events.
           ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
-          (when jsonrpc-id
-            (let [response-str (message handled)]
 
-              (.write writer response-str)
-              (.flush writer)
+          (cond
+            ;; It's assumed that only requests have ID.
+            jsonrpc-id
+            (let [handled (doto (handle jsonrpc) trace-handled)
+
+                  response-str (message handled)]
+
+              (doto writer
+                (.write response-str)
+                (.flush ))
 
               ;; Let the client know that a response was sent for the request.
               (trace {:status :response-sent
-                      :response response-str})))
+                      :response response-str}))
+
+            ;; Execute a notification handler in a separate thread.
+            :else
+            (.execute ne
+              (fn []
+                (doto (handle jsonrpc) trace-handled))))
 
           (recur initial-state))
 
