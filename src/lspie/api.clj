@@ -78,9 +78,10 @@
 
 (defn write [^Writer writer content]
   (let [s (message content)]
-    (doto writer
-      (.write s)
-      (.flush))
+    (locking writer
+      (doto writer
+        (.write s)
+        (.flush)))
 
     s))
 
