@@ -1,5 +1,7 @@
 (ns lspie.api
-  "API to aid in the development of a language server."
+  "API to aid in the development of a language server.
+
+  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/"
   (:require
    [clojure.string :as str]
    [clojure.data.json :as json])
