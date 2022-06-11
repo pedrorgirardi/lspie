@@ -32,6 +32,7 @@
 ;; and it gets passed a JSON-RPC content.
 ;;
 ;; JSON-RPC content is converted to Clojure data with keyword keys.
+;; (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#contentPart)
 ;;
 ;; Examples:
 ;;
