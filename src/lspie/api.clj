@@ -90,6 +90,8 @@
                        :newline# 0
                        :return# 0}
 
+        ^ExecutorService re (Executors/newSingleThreadExecutor)
+
         ^ExecutorService ne (Executors/newFixedThreadPool 4)]
 
     (loop [{:keys [chars newline# return#] :as state} initial-state]
@@ -122,21 +124,24 @@
           ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
 
           (cond
-            ;; It's assumed that only requests have ID.
+            ;; Execute request handler in an event-loop.
+            ;; (It's assumed that only requests have ID.)
             jsonrpc-id
-            (let [handled (doto (handle jsonrpc) trace-handled)
+            (.execute re
+              (fn []
+                (let [handled (doto (handle jsonrpc) trace-handled)
 
-                  response-str (message handled)]
+                      response-str (message handled)]
 
-              (doto writer
-                (.write response-str)
-                (.flush ))
+                  (doto writer
+                    (.write response-str)
+                    (.flush ))
 
-              ;; Let the client know that a response was sent for the request.
-              (trace {:status :response-sent
-                      :response response-str}))
+                  ;; Let the client know that a response was sent for the request.
+                  (trace {:status :response-sent
+                          :response response-str}))))
 
-            ;; Execute a notification handler in a separate thread.
+            ;; Execute notification handler in a separate thread.
             :else
             (.execute ne
               (fn []
