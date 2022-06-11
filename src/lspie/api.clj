@@ -26,21 +26,7 @@
 
   (:gen-class))
 
-(defn response [request result]
-  (merge (select-keys request [:id :jsonrpc]) {:result result}))
-
-
-;; --------------------------------
-
-
 (defmulti handle :method)
-
-(defmethod handle :default [jsonrpc]
-  (response jsonrpc nil))
-
-
-;; --------------------------------
-
 
 (defn header
  "The header part consists of header fields.
@@ -109,6 +95,9 @@
         (.flush)))
 
     s))
+
+(defn response [request result]
+  (merge (select-keys request [:id :jsonrpc]) {:result result}))
 
 (defn start [{:keys [reader writer trace]}]
   (let [trace (or trace identity)
