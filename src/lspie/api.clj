@@ -96,12 +96,12 @@
 (defn write
   "Write a message to a client e.g. Visual Studio Code.
 
-  `content` is encoded in a JSON-RPC message (a string).
+  `content` is encoded in a JSON-RPC message.
 
   Holds the monitor of `writer`.
 
   Returns message."
-  [^Writer writer content]
+  ^String [^Writer writer content]
   (let [s (message content)]
     (locking writer
       (doto writer
