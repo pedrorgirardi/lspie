@@ -34,6 +34,10 @@
 ;; JSON-RPC content is converted to Clojure data with keyword keys.
 ;; (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#contentPart)
 ;;
+;; JSON-RPC content encodes a Request or a Notification:
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#requestMessage
+;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
+;;
 ;; Examples:
 ;;
 ;; (defmethod lsp/handle "initialize" [request] ...)
