@@ -77,11 +77,12 @@
     (format "Content-Length: %s\r\n\r\n%s" (alength (.getBytes s)) s)))
 
 (defn write [^Writer writer content]
-  (doto writer
-    (.write (message content))
-    (.flush))
+  (let [s (message content)]
+    (doto writer
+      (.write s)
+      (.flush))
 
-  nil)
+    s))
 
 (defn start [{:keys [reader writer trace]}]
   (let [trace (or trace identity)
@@ -129,17 +130,8 @@
             jsonrpc-id
             (.execute re
               (fn []
-                (let [handled (doto (handle jsonrpc) trace-handled)
-
-                      response-str (message handled)]
-
-                  (doto writer
-                    (.write response-str)
-                    (.flush ))
-
-                  ;; Let the client know that a response was sent for the request.
-                  (trace {:status :response-sent
-                          :response response-str}))))
+                (let [handled (doto (handle jsonrpc) trace-handled)]
+                  (write writer handled))))
 
             ;; Execute notification handler in a separate thread.
             :else
