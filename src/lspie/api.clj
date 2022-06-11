@@ -1,4 +1,5 @@
 (ns lspie.api
+  "API to aid in the development of a language server."
   (:require
    [clojure.string :as str]
    [clojure.data.json :as json])
