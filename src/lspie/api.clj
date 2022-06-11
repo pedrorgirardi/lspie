@@ -26,6 +26,17 @@
 
   (:gen-class))
 
+;; Implementation of methods defined in the specification.
+;;
+;; `handle` dispatch value is a method name string as defined in the specification,
+;; and it gets passed a JSON-RPC content.
+;;
+;; JSON-RPC content is converted to Clojure data with keyword keys.
+;;
+;; Examples:
+;;
+;; (defmethod lsp/handle "initialize" [request] ...)
+;; (defmethod lsp/handle "textDocument/didOpen" [notification] ...)
 (defmulti handle :method)
 
 (defn header
