@@ -76,7 +76,15 @@
   (let [s (json/write-str content)]
     (format "Content-Length: %s\r\n\r\n%s" (alength (.getBytes s)) s)))
 
-(defn write [^Writer writer content]
+(defn write
+  "Write a message to a client e.g. Visual Studio Code.
+
+  `content` is encoded in a JSON-RPC message (a string).
+
+  Holds the monitor of `writer`.
+
+  Returns message."
+  [^Writer writer content]
   (let [s (message content)]
     (locking writer
       (doto writer
