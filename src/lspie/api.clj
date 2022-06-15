@@ -147,12 +147,15 @@
               {jsonrpc-id :id :as jsonrpc} (try
                                              (doto (json/read-str jsonrpc-str :key-fn keyword) trace-decoded)
                                              (catch Exception ex
-                                               (trace {:status :message-error
+                                               (trace {:status :message-decode-error
                                                        :header header
-                                                       :jsonrpc-str jsonrpc-str
+                                                       :content jsonrpc-str
                                                        :error ex})
 
-                                               :error))
+                                               (throw (ex-info "Failed to decode JSON-RPC content."
+                                                        {:header header
+                                                         :content jsonrpc-str}
+                                                        ex))))
 
               ;; Let the client know that the message, request or notification, was handled.
               trace-handled (fn [handled]
@@ -168,9 +171,6 @@
           ;; https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
 
           (cond
-            (= jsonrpc :error)
-            nil
-
             ;; Execute request handler in an event-loop.
             ;; (It's assumed that only requests have ID.)
             jsonrpc-id
