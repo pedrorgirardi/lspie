@@ -115,6 +115,10 @@
 (defn response [request result]
   (merge (select-keys request [:id :jsonrpc]) {:result result}))
 
+(defn error-response [request error]
+  ;; See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseError
+  (merge (select-keys request [:id :jsonrpc]) {:error error}))
+
 (defn start [{:keys [reader writer trace]}]
   (let [trace (or trace identity)
 
