@@ -135,7 +135,7 @@
         ;; Two consecutive return & newline characters - parse header and content.
         (and (= return# 2) (= newline# 2))
         (let [theader (fn [header]
-                        (trace {:status :read-header
+                        (trace {:status :header
                                 :header header}))
 
               {:keys [Content-Length] :as header} (doto (header chars) theader)
@@ -144,14 +144,14 @@
 
               ;; Let the client know that the message, request or notification, was decoded.
               tdecoded (fn [jsonrpc]
-                         (trace {:status :content-decoded
+                         (trace {:status :decoded
                                  :header header
                                  :content jsonrpc}))
 
               {jsonrpc-id :id :as jsonrpc} (try
                                              (doto (json/read-str jsonrpc-str :key-fn keyword) tdecoded)
                                              (catch Exception ex
-                                               (trace {:status :content-decode-failed
+                                               (trace {:status :decode-error
                                                        :header header
                                                        :content jsonrpc-str
                                                        :error ex})
@@ -163,7 +163,7 @@
 
               ;; Let the client know that the message, request or notification, was handled.
               thandled (fn [handled]
-                         (trace {:status :message-handled
+                         (trace {:status :handled
                                  :header header
                                  :content jsonrpc
                                  :handled handled}))]
