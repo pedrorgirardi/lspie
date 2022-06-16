@@ -73,27 +73,19 @@
             [k v]))))
     (into {})))
 
-(defn content [{:keys [reader header trace]}]
+(defn read-content [{:keys [in header trace]}]
   (let [{content-length :Content-Length} header
 
-        ^"[C" buffer (make-array Character/TYPE content-length)
-
-        output (StringWriter.)]
+        ^"[B" buffer (byte-array content-length)]
     (loop [off 0]
-      (let [size (.read ^Reader reader buffer off (- content-length off))]
+      (let [size (.read ^InputStream in buffer off (- content-length off))]
         (trace
           {:status :reads
            :size size})
 
-        (cond
-          (pos? size)
-          (do
-            (.write output buffer 0 size)
-
-            (recur size))
-
-          :else
-          (.toString output))))))
+        (if (pos? size)
+          (recur size)
+          (String. buffer "UTF-8"))))))
 
 (defn buffered-reader ^BufferedReader [^InputStream in]
   (BufferedReader. (InputStreamReader. in "UTF-8")))
@@ -135,7 +127,7 @@
   ;; See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseError
   (merge (select-keys request [:id :jsonrpc]) {:error error}))
 
-(defn start [{:keys [reader writer trace]}]
+(defn start [{:keys [in out trace]}]
   (let [trace (or trace identity)
 
         initial-state {:chars []
@@ -156,9 +148,9 @@
 
               header (doto (header chars) theader)
 
-              jsonrpc-str (content {:header header
-                                    :reader reader
-                                    :trace trace})
+              jsonrpc-str (read-content {:in in
+                                         :header header
+                                         :trace trace})
 
               ;; Let the client know that the message, request or notification, was decoded.
               tdecoded (fn [jsonrpc]
@@ -199,7 +191,7 @@
             (.execute re
               (fn []
                 (let [handled (doto (handle jsonrpc) thandled)]
-                  (write writer handled))))
+                  (write out handled))))
 
             ;; Execute notification handler in a separate thread.
             :else
@@ -210,7 +202,7 @@
           (recur initial-state))
 
         :else
-        (let [c (.read reader)]
+        (let [c (.read in)]
           (when-not (= c -1)
             (recur (merge state {:chars (conj chars (char c))}
                      (cond
@@ -233,29 +225,16 @@
   (def filepath "/Users/pedro/Developer/lspie/src/lspie/api.clj")
 
   (.length (clojure.java.io/file filepath))
-  ;; => 5372
+  ;; => 8679
 
-  (def reader (java.io.StringReader. (slurp filepath)))
+  (def len 10000)
 
-  (def output (StringWriter.))
+  (def stream (java.io.ByteArrayInputStream. (.getBytes (slurp filepath))))
 
-  (def len 8967)
-
-  (def  buffer (make-array Character/TYPE len))
+  (def  buffer (byte-array len))
 
   (def offset (atom 0))
 
-  (reset! offset (.read reader buffer @offset (- len @offset)))
-
-  (.write output buffer 0 @offset)
-
-  (.toString output)
-
-  (content
-    {:header {:Content-Length len}
-     :reader reader
-     :trace tap>})
+  (reset! offset (.read stream buffer @offset (- len @offset)))
 
   )
-
-
