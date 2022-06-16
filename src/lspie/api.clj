@@ -81,10 +81,11 @@
       (let [size (.read ^InputStream in buffer off (- content-length off))]
         (trace
           {:status :reading
-           :content-length content-length
-           :read size
-           :total (+ off size)
-           :pending (- content-length (+ off size))})
+           :header header
+           :progress
+           {:read size
+            :pending (- content-length (+ off size))
+            :total (+ off size)}})
 
         (if (= (+ off size) content-length)
           (String. buffer "UTF-8")
