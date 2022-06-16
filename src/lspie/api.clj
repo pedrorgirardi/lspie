@@ -83,9 +83,15 @@
           {:status :reads
            :size size})
 
-        (if (pos? size)
-          (recur size)
-          (String. buffer "UTF-8"))))))
+        (cond
+          (= size -1)
+          (String. buffer "UTF-8")
+
+          (= (+ off size) content-length)
+          (String. buffer "UTF-8")
+
+          :else
+          (recur size))))))
 
 (defn buffered-reader ^BufferedReader [^InputStream in]
   (BufferedReader. (InputStreamReader. in "UTF-8")))
