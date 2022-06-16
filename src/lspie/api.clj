@@ -76,8 +76,8 @@
     (loop [off 0]
       (let [off' (.read reader buffer off (- len off))]
         (if (< off len)
-          (recur off')
-          (String. buffer))))))
+          (String. buffer)
+          (recur off'))))))
 
 (defn buffered-reader ^BufferedReader [^InputStream in]
   (BufferedReader. (InputStreamReader. in "UTF-8")))
