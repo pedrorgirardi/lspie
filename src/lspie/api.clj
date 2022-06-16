@@ -78,12 +78,15 @@
         ^"[C" buffer (make-array Character/TYPE len)]
     (loop [off 0]
       (let [size (.read reader buffer off (- len off))]
-        (if (neg? size)
-          (.toString output)
+        (cond
+          (pos? size)
           (do
             (.write output buffer 0 size)
 
-            (recur size)))))))
+            (recur size))
+
+          :else
+          (.toString output))))))
 
 (defn buffered-reader ^BufferedReader [^InputStream in]
   (BufferedReader. (InputStreamReader. in "UTF-8")))
@@ -225,7 +228,7 @@
 
   (def output (StringWriter.))
 
-  (def len 200)
+  (def len 100)
 
   (def  buffer (make-array Character/TYPE len))
 
