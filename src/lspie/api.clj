@@ -225,7 +225,7 @@
 
   (require 'clojure.java.io)
 
-  (def filepath "/Users/pedro/Developer/lspie/src/lspie/api.clj")
+  (def filepath "/Users/pedro/Developer/Nightincode/src/nightincode/server.clj")
 
   (.length (clojure.java.io/file filepath))
   ;; => 8679
@@ -239,5 +239,10 @@
   (def offset (atom 0))
 
   (reset! offset (.read stream buffer @offset (- len @offset)))
+
+  (read-content
+    {:in stream
+     :header {:Content-Length 27997}
+     :trace tap>})
 
   )
