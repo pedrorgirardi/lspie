@@ -80,17 +80,14 @@
     (loop [off 0]
       (let [size (.read ^InputStream in buffer off (- content-length off))]
         (trace
-          {:status :reads
-           :size size})
+          {:status :reading
+           :content-length content-length
+           :read size
+           :total (+ off size)
+           :pending (- content-length (+ off size))})
 
-        (cond
-          (= size -1)
+        (if (= (+ off size) content-length)
           (String. buffer "UTF-8")
-
-          (= (+ off size) content-length)
-          (String. buffer "UTF-8")
-
-          :else
           (recur size))))))
 
 (defn buffered-reader ^BufferedReader [^InputStream in]
