@@ -73,11 +73,18 @@
             [k v]))))
     (into {})))
 
-(defn reads [^Reader reader len]
-  (let [output (StringWriter.)
-        ^"[C" buffer (make-array Character/TYPE len)]
+(defn content [{:keys [reader header trace]}]
+  (let [{content-length :Content-Length} header
+
+        ^"[C" buffer (make-array Character/TYPE content-length)
+
+        output (StringWriter.)]
     (loop [off 0]
-      (let [size (.read reader buffer off (- len off))]
+      (let [size (.read ^Reader reader buffer off (- content-length off))]
+        (trace
+          {:status :reads
+           :size size})
+
         (cond
           (pos? size)
           (do
@@ -147,9 +154,11 @@
                         (trace {:status :header
                                 :header header}))
 
-              {:keys [Content-Length] :as header} (doto (header chars) theader)
+              header (doto (header chars) theader)
 
-              jsonrpc-str (reads reader Content-Length)
+              jsonrpc-str (content {:header header
+                                    :reader reader
+                                    :trace trace})
 
               ;; Let the client know that the message, request or notification, was decoded.
               tdecoded (fn [jsonrpc]
@@ -221,14 +230,16 @@
 
   (require 'clojure.java.io)
 
-  (.length (clojure.java.io/file "/Users/pedro/Developer/lispi/src/lispi/core.clj"))
+  (def filepath "/Users/pedro/Developer/lspie/src/lspie/api.clj")
+
+  (.length (clojure.java.io/file filepath))
   ;; => 5372
 
-  (def reader (java.io.StringReader. (slurp "/Users/pedro/Developer/lispi/src/lispi/core.clj")))
+  (def reader (java.io.StringReader. (slurp filepath)))
 
   (def output (StringWriter.))
 
-  (def len 100)
+  (def len 8967)
 
   (def  buffer (make-array Character/TYPE len))
 
@@ -240,9 +251,10 @@
 
   (.toString output)
 
-  (reads reader len)
-
-
+  (content
+    {:header {:Content-Length len}
+     :reader reader
+     :trace tap>})
 
   )
 
