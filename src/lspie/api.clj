@@ -73,7 +73,11 @@
             [k v]))))
     (into {})))
 
-(defn read-content [{:keys [in header trace]}]
+(defn readc
+  "Read content from `in`.
+
+  Returns content string."
+  [{:keys [in header trace]}]
   (let [{content-length :Content-Length} header
 
         ^"[B" buffer (byte-array content-length)
@@ -88,7 +92,7 @@
     (trace
       {:status :read
        :header header
-       :read size})
+       :numbytes size})
 
     (String. buffer "UTF-8")))
 
@@ -149,9 +153,9 @@
         (and (= return# 2) (= newline# 2))
         (let [header (header chars)
 
-              jsonrpc-str (read-content {:in in
-                                         :header header
-                                         :trace trace})
+              jsonrpc-str (readc {:in in
+                                  :header header
+                                  :trace trace})
 
               ;; Let the client know that the message, request or notification, was decoded.
               tdecoded (fn [jsonrpc]
@@ -238,7 +242,7 @@
 
   (reset! offset (.read stream buffer @offset (- len @offset)))
 
-  (read-content
+  (readc
     {:in stream
      :header {:Content-Length 27997}
      :trace tap>})
