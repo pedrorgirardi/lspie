@@ -78,16 +78,18 @@
 
         ^"[B" buffer (byte-array content-length)]
     (loop [off 0]
-      (let [size (.read ^InputStream in buffer off (- content-length off))]
+      (let [size (.read ^InputStream in buffer off (- content-length off))
+
+            eof? (= size -1)
+
+            complete? (= (+ off size) content-length)]
+
         (trace
           {:status :reading
            :header header
-           :progress
-           {:read size
-            :pending (- content-length (+ off size))
-            :total (+ off size)}})
+           :read (+ off (max size 0))})
 
-        (if (= (+ off size) content-length)
+        (if (or eof? complete?)
           (String. buffer "UTF-8")
           (recur size))))))
 
