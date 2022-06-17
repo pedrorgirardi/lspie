@@ -76,22 +76,16 @@
 (defn read-content [{:keys [in header trace]}]
   (let [{content-length :Content-Length} header
 
-        ^"[B" buffer (byte-array content-length)]
-    (loop [off 0]
-      (let [size (.read ^InputStream in buffer off (- content-length off))
+        ^"[B" buffer (byte-array content-length)
 
-            eof? (= size -1)
+        size (.readNBytes ^InputStream in buffer 0 content-length)]
 
-            complete? (= (+ off size) content-length)]
+    (trace
+      {:status :reading
+       :header header
+       :read size})
 
-        (trace
-          {:status :reading
-           :header header
-           :read (+ off (max size 0))})
-
-        (if (or eof? complete?)
-          (String. buffer "UTF-8")
-          (recur size))))))
+    (String. buffer "UTF-8")))
 
 (defn buffered-reader ^BufferedReader [^InputStream in]
   (BufferedReader. (InputStreamReader. in "UTF-8")))
