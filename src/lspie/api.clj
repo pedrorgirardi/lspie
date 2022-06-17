@@ -78,10 +78,15 @@
 
         ^"[B" buffer (byte-array content-length)
 
+        ;; > Reads the requested number of bytes from the input stream into the given byte array.
+        ;;   This method blocks until len bytes of input data have been read, end of stream is detected, or an exception is thrown.
+        ;;   The number of bytes actually read, possibly zero, is returned.
+
         size (.readNBytes ^InputStream in buffer 0 content-length)]
 
+    ;; Let the client know that the message, request or notification, was read.
     (trace
-      {:status :reading
+      {:status :read
        :header header
        :read size})
 
@@ -142,11 +147,7 @@
       (cond
         ;; Two consecutive return & newline characters - parse header and content.
         (and (= return# 2) (= newline# 2))
-        (let [theader (fn [header]
-                        (trace {:status :header
-                                :header header}))
-
-              header (doto (header chars) theader)
+        (let [header (header chars)
 
               jsonrpc-str (read-content {:in in
                                          :header header
