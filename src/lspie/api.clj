@@ -8,10 +8,7 @@
 
   (:import
    (java.io
-    Reader
     Writer
-
-    StringWriter
 
     InputStream
     OutputStream
