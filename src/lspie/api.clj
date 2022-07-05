@@ -9,15 +9,7 @@
   (:import
    (java.io
     Writer
-
-    InputStream
-    OutputStream
-
-    InputStreamReader
-    OutputStreamWriter
-
-    BufferedReader
-    BufferedWriter)
+    InputStream)
 
    (java.util.concurrent
     Executors
@@ -92,12 +84,6 @@
        :numbytes size})
 
     (String. buffer "UTF-8")))
-
-(defn buffered-reader ^BufferedReader [^InputStream in]
-  (BufferedReader. (InputStreamReader. in "UTF-8")))
-
-(defn buffered-writer ^BufferedWriter [^OutputStream out]
-  (BufferedWriter. (OutputStreamWriter. out "UTF-8")))
 
 (defn message
   "The base protocol consists of a header and a content part (comparable to HTTP).
