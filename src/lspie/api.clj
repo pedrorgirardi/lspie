@@ -38,15 +38,15 @@
 (defn header
  "The header part consists of header fields.
   Each header field is comprised of a name and a value,
-  separated by ‘: ‘ (a colon and a space).
+  separated by ': ' (a colon and a space).
 
   The structure of header fields conform to the HTTP semantic.
 
-  Each header field is terminated by ‘\\r\\n’.
+  Each header field is terminated by '\\r\\n'.
 
-  Considering the last header field and the overall header itself are each terminated with ‘\\r\\n’,
+  Considering the last header field and the overall header itself are each terminated with '\\r\\n',
   and that at least one header is mandatory,
-  this means that two ‘\\r\\n’ sequences always immediately precede the content part of a message.
+  this means that two '\\r\\n' sequences always immediately precede the content part of a message.
 
   https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#headerPart"
   [chars]
