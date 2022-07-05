@@ -204,30 +204,3 @@
                        :else
                        {:return# 0
                         :newline# 0})))))))))
-
-
-(comment
-
-  (require 'clojure.java.io)
-
-  (def filepath "/Users/pedro/Developer/Nightincode/src/nightincode/server.clj")
-
-  (.length (clojure.java.io/file filepath))
-  ;; => 8679
-
-  (def len 10000)
-
-  (def stream (java.io.ByteArrayInputStream. (.getBytes (slurp filepath))))
-
-  (def  buffer (byte-array len))
-
-  (def offset (atom 0))
-
-  (reset! offset (.read stream buffer @offset (- len @offset)))
-
-  (readc
-    {:in stream
-     :header {:Content-Length 27997}
-     :trace tap>})
-
-  )
