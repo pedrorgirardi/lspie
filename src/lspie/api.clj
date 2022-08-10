@@ -8,8 +8,8 @@
 
   (:import
    (java.io
-    Writer
-    InputStream)
+    InputStream
+    OutputStream)
 
    (java.util.concurrent
     Executors
@@ -85,32 +85,22 @@
 
     (String. buffer "UTF-8")))
 
-(defn message
-  "The base protocol consists of a header and a content part (comparable to HTTP).
-
-  The header and content part are separated by a \\r\\n.
-
-  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#baseProtocol"
-  [content]
-  (let [s (json/write-str content)]
-    (format "Content-Length: %s\r\n\r\n%s" (alength (.getBytes s)) s)))
-
 (defn write
   "Write a message to a client e.g. Visual Studio Code.
 
   `content` is encoded in a JSON-RPC message.
 
-  Holds the monitor of `writer`.
+  Holds the monitor of `out`.
 
-  Returns message."
-  ^String [^Writer writer content]
-  (let [s (message content)]
-    (locking writer
-      (doto writer
-        (.write s)
-        (.flush)))
-
-    s))
+  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#baseProtocol"
+  ^String [^OutputStream out content]
+  (let [c (.getBytes (json/write-str content) "UTF-8")
+        h (.getBytes (format "Content-Length: %s\r\n\r\n" (alength c)) "US-ASCII")]
+    (locking out
+      (doto out
+        (.write h)
+        (.write c)
+        (.flush)))))
 
 (defn response [request result]
   (merge (select-keys request [:id :jsonrpc]) {:result result}))
